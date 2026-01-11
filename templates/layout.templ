@@ -9,11 +9,21 @@ templ Layout(title string) {
 			<meta name="description" content="Michael's Portfolio"/>
 			<title>{ title }</title>
 			<link rel="stylesheet" href="/static/css/styles.css"/>
+			<link rel="stylesheet" href="/static/css/navigation.css"/>
+			<link rel="stylesheet" href="/static/css/blog-feed.css"/>
+			<link rel="stylesheet" href="/static/css/blog-post.css"/>
+			<link rel="stylesheet" href="/static/css/new-blog.css"/>
+			<link rel="stylesheet" href="/static/css/project-feed.css"/>
+			<link rel="stylesheet" href="/static/css/project-view.css"/>
+			<link rel="stylesheet" href="/static/css/contact-form.css"/>
 			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
 			<script src="/static/js/hero-grid.js" defer></script>
 			<script src="/static/js/skills-expand.js" defer></script>
+			<script src="/static/js/blog-filter.js" defer></script>
+			<script src="/static/js/navigation.js" defer></script>
 		</head>
 		<body>
+			@Navigation()
 			<main>
 				{ children... }
 			</main>
