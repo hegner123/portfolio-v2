@@ -54,3 +54,8 @@ tmp/
 
 # Trash directory (for Claude Code)
 .trash/
+trash/
+
+# SQLite database files
+*.db
+portfolio.db
