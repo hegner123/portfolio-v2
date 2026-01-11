@@ -6,7 +6,14 @@
       "Bash(go install:*)",
       "Bash(templ generate:*)",
       "Bash(go build:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(ls:*)",
+      "Bash(./portfolio-v2)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(go run:*)"
     ]
   }
 }
