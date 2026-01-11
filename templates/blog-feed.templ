@@ -1,0 +1,127 @@
+package templates
+
+import (
+	"fmt"
+	"portfolio-v2/models"
+)
+
+// BlogFeed is the main blog section component
+templ BlogFeed(posts []models.BlogPostPreview, hasMore bool, nextPage int, tags []string) {
+	<section id="blog" class="blog-feed">
+		<div class="blog-feed__container">
+			<h2 class="blog-feed__heading">
+				Recent Writing
+				<span class="blog-feed__heading-underline"></span>
+			</h2>
+
+			if len(tags) > 0 {
+				<div class="blog-feed__filters">
+					<button
+						class="blog-feed__filter-tag blog-feed__filter-tag--active"
+						hx-get="/api/blog/posts?page=1"
+						hx-target="#posts-list"
+						hx-swap="innerHTML"
+					>
+						All
+					</button>
+					for _, tag := range tags {
+						<button
+							class="blog-feed__filter-tag"
+							hx-get={ "/api/blog/posts?page=1&tag=" + templ.EscapeString(tag) }
+							hx-target="#posts-list"
+							hx-swap="innerHTML"
+						>
+							{ tag }
+						</button>
+					}
+				</div>
+			}
+
+			<div id="posts-list" class="blog-feed__posts">
+				<div id="posts-container">
+					for _, post := range posts {
+						@BlogPostCard(post)
+					}
+				</div>
+				if hasMore {
+					@LoadMoreButton(nextPage, "")
+				}
+			</div>
+		</div>
+	</section>
+}
+
+// BlogPostList renders a list of blog post cards (used for HTMX responses)
+templ BlogPostList(posts []models.BlogPostPreview, hasMore bool, nextPage int, tagFilter string) {
+	for _, post := range posts {
+		@BlogPostCard(post)
+	}
+	if hasMore {
+		<div id="load-more-trigger" class="blog-feed__load-more-container"
+			hx-get={ buildLoadMoreURL(nextPage, tagFilter) }
+			hx-target="this"
+			hx-swap="beforebegin"
+			hx-swap-oob="true"
+		>
+			<button class="blog-feed__load-more">
+				Load More Posts
+			</button>
+		</div>
+	}
+}
+
+// LoadMoreButton renders the load more button with HTMX attributes
+templ LoadMoreButton(nextPage int, tagFilter string) {
+	<div id="load-more-trigger" class="blog-feed__load-more-container"
+		hx-get={ buildLoadMoreURL(nextPage, tagFilter) }
+		hx-target="this"
+		hx-swap="beforebegin"
+	>
+		<button class="blog-feed__load-more">
+			Load More Posts
+		</button>
+	</div>
+}
+
+// Helper function to build load more URL with optional tag filter
+func buildLoadMoreURL(nextPage int, tagFilter string) string {
+	url := "/api/blog/posts?page=" + intToString(nextPage)
+	if tagFilter != "" {
+		url += "&tag=" + tagFilter
+	}
+	return url
+}
+
+// BlogPostCard renders a single blog post preview card
+templ BlogPostCard(post models.BlogPostPreview) {
+	<article class="blog-post-card">
+		<div class="blog-post-card__content">
+			<time class="blog-post-card__date" datetime={ post.PublishedAt.Format("2006-01-02") }>
+				{ post.PublishedAt.Format("January 2, 2006") }
+			</time>
+
+			<h3 class="blog-post-card__title">
+				<a href={ templ.SafeURL("/blog/" + post.Slug) } class="blog-post-card__link">
+					{ post.Title }
+				</a>
+			</h3>
+
+			<p class="blog-post-card__excerpt">
+				{ post.Excerpt }
+			</p>
+
+			if len(post.Tags) > 0 {
+				<div class="blog-post-card__tags">
+					for _, tag := range post.Tags {
+						<span class="blog-post-card__tag">{ tag }</span>
+					}
+				</div>
+			}
+		</div>
+	</article>
+}
+
+// Helper function to convert int to string for templ
+func intToString(i int) string {
+	return fmt.Sprintf("%d", i)
+}

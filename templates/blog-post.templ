@@ -1,0 +1,70 @@
+package templates
+
+import (
+	"portfolio-v2/models"
+)
+
+// BlogPostView displays a full blog post
+templ BlogPostView(post models.BlogPost) {
+	@Layout(post.Title + " - Michael Hegner") {
+		<div class="blog-post-view">
+			<div class="blog-post-view__container">
+				<nav class="blog-post-view__nav">
+					<a href="/#blog" class="blog-post-view__back">← Back to Blog</a>
+				</nav>
+
+				<article class="blog-post-view__article">
+					<header class="blog-post-view__header">
+						<time class="blog-post-view__date" datetime={ post.PublishedAt.Format("2006-01-02") }>
+							{ post.PublishedAt.Format("January 2, 2006") }
+						</time>
+
+						<h1 class="blog-post-view__title">{ post.Title }</h1>
+
+						if len(post.Tags) > 0 {
+							<div class="blog-post-view__tags">
+								for _, tag := range post.Tags {
+									<span class="blog-post-view__tag">{ tag }</span>
+								}
+							</div>
+						}
+
+						<div class="blog-post-view__meta">
+							<span class="blog-post-view__author">By { post.Author }</span>
+						</div>
+					</header>
+
+					<div class="blog-post-view__content">
+						@templ.Raw(formatMarkdown(post.Content))
+					</div>
+				</article>
+
+				<footer class="blog-post-view__footer">
+					<a href="/#blog" class="blog-post-view__back-button">← Back to All Posts</a>
+				</footer>
+			</div>
+		</div>
+	}
+}
+
+// BlogPostNotFound displays when a post is not found
+templ BlogPostNotFound() {
+	@Layout("Post Not Found - Michael Hegner") {
+		<div class="blog-post-view">
+			<div class="blog-post-view__container">
+				<div class="blog-post-view__not-found">
+					<h1 class="blog-post-view__not-found-title">Post Not Found</h1>
+					<p class="blog-post-view__not-found-message">The blog post you're looking for doesn't exist or has been removed.</p>
+					<a href="/#blog" class="blog-post-view__back-button">← Back to Blog</a>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+// formatMarkdown converts markdown to HTML (simple implementation)
+func formatMarkdown(content string) string {
+	// For now, preserve line breaks and convert to paragraphs
+	// In the future, you can use a proper markdown library like goldmark
+	return "<pre class=\"blog-post-view__markdown\">" + content + "</pre>"
+}

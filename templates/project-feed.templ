@@ -1,0 +1,104 @@
+package templates
+
+import (
+	"fmt"
+	"portfolio-v2/models"
+)
+
+// ProjectFeed is the main projects section component
+templ ProjectFeed(projects []models.Project, hasMore bool, nextPage int) {
+	<section id="projects" class="project-feed">
+		<div class="project-feed__container">
+			<h2 class="project-feed__heading">
+				Featured Projects
+				<span class="project-feed__heading-underline"></span>
+			</h2>
+
+			<div id="projects-list" class="project-feed__grid">
+				<div id="projects-container">
+					for _, project := range projects {
+						@ProjectCard(project)
+					}
+				</div>
+				if hasMore {
+					@ProjectLoadMoreButton(nextPage)
+				}
+			</div>
+		</div>
+	</section>
+}
+
+// ProjectList renders a list of project cards (used for HTMX responses)
+templ ProjectList(projects []models.Project, hasMore bool, nextPage int) {
+	for _, project := range projects {
+		@ProjectCard(project)
+	}
+	if hasMore {
+		<div id="project-load-more-trigger" class="project-feed__load-more-container"
+			hx-get={ fmt.Sprintf("/api/projects?page=%d", nextPage) }
+			hx-target="this"
+			hx-swap="beforebegin"
+			hx-swap-oob="true"
+		>
+			<button class="project-feed__load-more">
+				Load More Projects
+			</button>
+		</div>
+	}
+}
+
+// ProjectLoadMoreButton renders the load more button with HTMX attributes
+templ ProjectLoadMoreButton(nextPage int) {
+	<div id="project-load-more-trigger" class="project-feed__load-more-container"
+		hx-get={ fmt.Sprintf("/api/projects?page=%d", nextPage) }
+		hx-target="this"
+		hx-swap="beforebegin"
+	>
+		<button class="project-feed__load-more">
+			Load More Projects
+		</button>
+	</div>
+}
+
+// ProjectCard renders a single project card with image
+templ ProjectCard(project models.Project) {
+	<article class="project-card">
+		<a href={ templ.SafeURL("/project/" + project.Slug) } class="project-card__link">
+			<div class="project-card__image-container">
+				<img
+					src={ project.ImageURL }
+					alt={ project.Title }
+					class="project-card__image"
+					loading="lazy"
+				/>
+				if project.Featured {
+					<span class="project-card__featured-badge">Featured</span>
+				}
+			</div>
+
+			<div class="project-card__content">
+				<h3 class="project-card__title">
+					{ project.Title }
+				</h3>
+
+				<p class="project-card__description">
+					{ project.Description }
+				</p>
+
+				if len(project.Technologies) > 0 {
+					<div class="project-card__technologies">
+						for _, tech := range project.Technologies {
+							<span class="project-card__tech-tag">{ tech }</span>
+						}
+					</div>
+				}
+
+				<div class="project-card__footer">
+					<span class="project-card__view-more">
+						View Project Details →
+					</span>
+				</div>
+			</div>
+		</a>
+	</article>
+}

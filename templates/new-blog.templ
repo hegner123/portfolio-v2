@@ -1,0 +1,89 @@
+package templates
+
+templ NewBlog() {
+	@Layout("New Blog Post - Michael Hegner") {
+		<div class="new-blog">
+			<div class="new-blog__container">
+				<h1 class="new-blog__heading">
+					Create New Blog Post
+					<span class="new-blog__heading-underline"></span>
+				</h1>
+
+				<form class="new-blog__form" method="POST" action="/new-blog">
+					<div class="new-blog__field">
+						<label for="title" class="new-blog__label">Title</label>
+						<input
+							type="text"
+							id="title"
+							name="title"
+							class="new-blog__input"
+							required
+							placeholder="Enter blog post title"
+						/>
+					</div>
+
+					<div class="new-blog__field">
+						<label for="tags" class="new-blog__label">Tags</label>
+						<input
+							type="text"
+							id="tags"
+							name="tags"
+							class="new-blog__input"
+							placeholder="Go, HTMX, Web Development (comma-separated)"
+						/>
+						<small class="new-blog__help">Separate tags with commas</small>
+					</div>
+
+					<div class="new-blog__field">
+						<label for="excerpt" class="new-blog__label">Excerpt</label>
+						<textarea
+							id="excerpt"
+							name="excerpt"
+							class="new-blog__textarea new-blog__textarea--small"
+							required
+							placeholder="Brief description or preview of the post"
+							rows="3"
+						></textarea>
+					</div>
+
+					<div class="new-blog__field">
+						<label for="content" class="new-blog__label">Content</label>
+						<textarea
+							id="content"
+							name="content"
+							class="new-blog__textarea"
+							required
+							placeholder="Write your blog post content here (Markdown supported)"
+							rows="15"
+						></textarea>
+						<small class="new-blog__help">You can use Markdown formatting</small>
+					</div>
+
+					<div class="new-blog__actions">
+						<button type="submit" class="new-blog__submit">
+							Publish Post
+						</button>
+						<a href="/" class="new-blog__cancel">Cancel</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	}
+}
+
+templ NewBlogSuccess(slug string) {
+	@Layout("Post Created - Michael Hegner") {
+		<div class="new-blog">
+			<div class="new-blog__container">
+				<div class="new-blog__success">
+					<h1 class="new-blog__success-heading">Blog Post Published!</h1>
+					<p class="new-blog__success-message">Your blog post has been successfully created.</p>
+					<div class="new-blog__success-actions">
+						<a href="/" class="new-blog__success-button">Go to Home</a>
+						<a href="/new-blog" class="new-blog__success-link">Create Another Post</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}

@@ -1,25 +1,21 @@
 package templates
 
-templ Home() {
+import "portfolio-v2/models"
+
+templ Home(
+	blogPosts []models.BlogPostPreview,
+	blogHasMore bool,
+	blogNextPage int,
+	blogTags []string,
+	projects []models.Project,
+	projectsHasMore bool,
+	projectsNextPage int,
+) {
 	@Layout("Michael Hegner - Senior Software Engineer") {
 		@Hero()
 		@About()
-		<div class="container">
-
-			<section id="blog">
-				<h2>Blog</h2>
-				<p>Blog posts will be displayed here.</p>
-			</section>
-
-			<section id="projects">
-				<h2>Projects</h2>
-				<p>Projects will be displayed here.</p>
-			</section>
-
-			<section id="contact">
-				<h2>Contact</h2>
-				<p>Contact form will go here.</p>
-			</section>
-		</div>
+		@BlogFeed(blogPosts, blogHasMore, blogNextPage, blogTags)
+		@ProjectFeed(projects, projectsHasMore, projectsNextPage)
+		@ContactForm()
 	}
 }
