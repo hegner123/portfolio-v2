@@ -62,6 +62,61 @@ npm install -g clean-css-cli
 
 ---
 
+### `sync-db.sh` - Database Synchronization
+
+Intelligent database sync script that compares local and remote database modification times and syncs the newer version to the older location.
+
+**Usage:**
+```bash
+./scripts/sync-db.sh
+```
+
+**What it does:**
+1. Checks modification times of both local and remote databases
+2. Determines which database is newer
+3. Prompts for confirmation before syncing
+4. Creates backup of the database being overwritten
+5. Syncs the newer database to the older location
+6. Restarts remote service if pushing to production
+
+**Sync Directions:**
+- **Push (local → remote)**: When local database is newer
+  - Backs up remote database to `/home/admin/portfolio/.db-backups/`
+  - Pushes local database to server
+  - Restarts portfolio service on server
+- **Pull (remote → local)**: When remote database is newer
+  - Backs up local database to `./.db-backups/`
+  - Pulls remote database to local
+
+**Output:**
+```
+Local database:  2026-01-12 10:30:45
+Remote database: 2026-01-12 08:15:20
+
+⚠ The local database is newer by: 2h 15m 25s
+
+➜ Action: Push local database to remote (local → remote)
+
+Continue with sync? (y/N):
+```
+
+**Safety Features:**
+- Automatic backup before overwriting (timestamped)
+- Confirmation prompt showing sync direction and time difference
+- No sync if databases have identical modification times
+
+**Use Cases:**
+- Created blog posts locally and want to push to production
+- Created content in production and want to pull to local
+- Keep development and production databases in sync
+
+**Prerequisites:**
+- SSH key authentication configured (see deployment docs)
+- Local database exists at project root (`portfolio.db`)
+- Remote service running on Linode
+
+---
+
 ## Build Flags Explained
 
 ### Production Build Flags
