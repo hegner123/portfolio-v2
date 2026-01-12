@@ -231,6 +231,202 @@ func SeedProjects(db *sql.DB) error {
 	return nil
 }
 
+// CreateProject inserts a new project into the database
+func CreateProject(db *sql.DB, project *models.Project) error {
+	technologiesJSON, err := json.Marshal(project.Technologies)
+	if err != nil {
+		return fmt.Errorf("marshal technologies: %w", err)
+	}
+
+	featuredInt := 0
+	if project.Featured {
+		featuredInt = 1
+	}
+
+	query := `
+		INSERT INTO projects (title, slug, description, technologies, github_url, image_url, featured)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+	`
+
+	result, err := db.Exec(
+		query,
+		project.Title,
+		project.Slug,
+		project.Description,
+		string(technologiesJSON),
+		project.GithubURL,
+		project.ImageURL,
+		featuredInt,
+	)
+	if err != nil {
+		return fmt.Errorf("insert project: %w", err)
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return fmt.Errorf("get last insert id: %w", err)
+	}
+
+	project.ID = id
+	return nil
+}
+
+// UpdateProject updates an existing project by ID
+func UpdateProject(db *sql.DB, project *models.Project) error {
+	technologiesJSON, err := json.Marshal(project.Technologies)
+	if err != nil {
+		return fmt.Errorf("marshal technologies: %w", err)
+	}
+
+	featuredInt := 0
+	if project.Featured {
+		featuredInt = 1
+	}
+
+	query := `
+		UPDATE projects
+		SET title = ?, description = ?, technologies = ?, github_url = ?, image_url = ?, featured = ?
+		WHERE id = ?
+	`
+
+	result, err := db.Exec(
+		query,
+		project.Title,
+		project.Description,
+		string(technologiesJSON),
+		project.GithubURL,
+		project.ImageURL,
+		featuredInt,
+		project.ID,
+	)
+	if err != nil {
+		return fmt.Errorf("update project: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("check rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("project with id %d not found", project.ID)
+	}
+
+	return nil
+}
+
+// GetProjectByID retrieves a single project by ID (for editing)
+func GetProjectByID(db *sql.DB, id int) (*models.Project, error) {
+	query := `
+		SELECT id, title, slug, description, technologies, github_url, image_url, featured, created_at
+		FROM projects
+		WHERE id = ?
+	`
+
+	var project models.Project
+	var technologiesJSON string
+	var featured int
+
+	err := db.QueryRow(query, id).Scan(
+		&project.ID,
+		&project.Title,
+		&project.Slug,
+		&project.Description,
+		&technologiesJSON,
+		&project.GithubURL,
+		&project.ImageURL,
+		&featured,
+		&project.CreatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("query project: %w", err)
+	}
+
+	project.Featured = featured == 1
+
+	if err := json.Unmarshal([]byte(technologiesJSON), &project.Technologies); err != nil {
+		project.Technologies = []string{}
+	}
+
+	return &project, nil
+}
+
+// GetAllProjects retrieves all projects for admin dashboard
+func GetAllProjects(db *sql.DB) ([]models.Project, error) {
+	query := `
+		SELECT id, title, slug, description, technologies, github_url, image_url, featured, created_at
+		FROM projects
+		ORDER BY featured DESC, created_at DESC
+	`
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("query all projects: %w", err)
+	}
+	defer rows.Close()
+
+	var projects []models.Project
+	for rows.Next() {
+		var project models.Project
+		var technologiesJSON string
+		var featured int
+
+		err := rows.Scan(
+			&project.ID,
+			&project.Title,
+			&project.Slug,
+			&project.Description,
+			&technologiesJSON,
+			&project.GithubURL,
+			&project.ImageURL,
+			&featured,
+			&project.CreatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("scan project: %w", err)
+		}
+
+		project.Featured = featured == 1
+
+		if err := json.Unmarshal([]byte(technologiesJSON), &project.Technologies); err != nil {
+			project.Technologies = []string{}
+		}
+
+		projects = append(projects, project)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate projects: %w", err)
+	}
+
+	return projects, nil
+}
+
+// DeleteProject deletes a project by ID
+func DeleteProject(db *sql.DB, id int) error {
+	query := `DELETE FROM projects WHERE id = ?`
+
+	result, err := db.Exec(query, id)
+	if err != nil {
+		return fmt.Errorf("delete project: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("check rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("project with id %d not found", id)
+	}
+
+	return nil
+}
+
 // generateProjectSlug creates a URL-friendly slug from a title
 func generateProjectSlug(title string) string {
 	slug := strings.ToLower(title)

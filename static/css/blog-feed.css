@@ -1,3 +1,12 @@
+/**
+ * Blog Feed Component
+ *
+ * Responsive breakpoints (from design-system.css):
+ * - Mobile (xs): 480px and below
+ * - Tablet (md): 768px and below
+ * - Desktop (lg): 1024px and above
+ */
+
 /* Blog Feed Section */
 .blog-feed {
     min-height: 100vh;
@@ -54,7 +63,7 @@
     border: 1px solid rgba(102, 126, 234, 0.3);
     border-radius: 24px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .blog-feed__filter-tag:hover {
@@ -88,7 +97,7 @@
     border: var(--border-accent);
     border-radius: 16px;
     padding: 2rem;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     position: relative;
     overflow: hidden;
 }
@@ -174,7 +183,7 @@
     border-radius: 20px;
     font-size: 0.875rem;
     color: var(--color-accent-blue);
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .blog-post-card:hover .blog-post-card__tag {
@@ -198,7 +207,7 @@
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     box-shadow: var(--shadow-accent);
     position: relative;
     overflow: hidden;

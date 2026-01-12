@@ -1,35 +1,26 @@
-/* CSS Variables */
+/**
+ * Main Styles
+ *
+ * This file depends on design-system.css being loaded first.
+ * Contains base styles, resets, and component styles.
+ *
+ * Responsive breakpoints (from design-system.css):
+ * - Mobile (xs): 480px and below
+ * - Tablet (md): 768px and below
+ * - Desktop (lg): 1024px and above
+ */
+
+/* Legacy variable mappings for backward compatibility */
 :root {
-    /* Primary Colors */
-    --color-bg-primary: #000000;
-    --color-text-primary: #ffffff;
-    --color-text-secondary: #e0e0e0;
-    --color-text-tertiary: #d0d0d0;
-
-    /* Accent Colors */
-    --color-accent-purple: #764ba2;
-    --color-accent-blue: #667eea;
-
-    /* Gradients */
-    --gradient-hero: linear-gradient(135deg, var(--color-accent-blue) 0%, var(--color-accent-purple) 100%);
-    --gradient-accent: linear-gradient(90deg, var(--color-accent-blue), var(--color-accent-purple));
-    --gradient-bg-dark: linear-gradient(to bottom, #0a0a0a 0%, var(--color-bg-primary) 100%);
-
-    /* Surface Colors */
-    --color-surface-elevated: #1a1a1a;
-
-    /* Borders & Shadows */
-    --border-accent: 1px solid rgba(102, 126, 234, 0.3);
-    --shadow-accent: 0 0 20px rgba(102, 126, 234, 0.3), 0 0 40px rgba(118, 75, 162, 0.2);
-
-    /* Typography */
-    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    --font-family: var(--font-family-base);
 }
 
 /* Smooth Scrolling */
 html {
     scroll-behavior: smooth;
     scroll-padding-top: 80px; /* Account for sticky navigation height */
+    overflow-x: hidden;
+    width: 100%;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -50,6 +41,9 @@ body {
     line-height: 1.6;
     color: var(--color-text-primary);
     background-color: var(--color-bg-primary);
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
 }
 
 /* Container */
@@ -63,6 +57,8 @@ body {
 .hero-section {
     position: relative;
     min-height: 100vh;
+    width: 100%;
+    max-width: 100vw;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -70,6 +66,9 @@ body {
     text-align: center;
     overflow: hidden;
     background: var(--color-bg-primary);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
     user-select: none;
 }
 
@@ -101,6 +100,9 @@ body {
     color: var(--color-text-primary);
     max-width: 800px;
     padding: 2rem;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
     user-select: text;
 }
 
@@ -131,6 +133,9 @@ body {
 section {
     padding: 4rem 0;
     min-height: 50vh;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 section h2 {
@@ -290,6 +295,18 @@ section p {
 }
 
 /* Responsive */
+
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .hero-grid {
+        grid-template-columns: repeat(auto-fill, 50px);
+        grid-template-rows: repeat(auto-fill, 50px);
+        gap: 7px;
+        padding: 7px;
+    }
+}
+
+/* Mobile */
 @media (max-width: 768px) {
     .hero-name {
         font-size: 2.5rem;
@@ -307,6 +324,7 @@ section p {
         grid-template-columns: repeat(auto-fill, 40px);
         grid-template-rows: repeat(auto-fill, 40px);
         gap: 6px;
+        padding: 6px;
     }
 
     section h2 {

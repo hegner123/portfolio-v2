@@ -2,11 +2,11 @@ package templates
 
 // ContactForm is the main contact section component
 templ ContactForm() {
-	<section id="contact" class="contact-section">
+	<section id="contact" class="contact-section" aria-labelledby="contact-heading">
 		<div class="contact-section__container">
-			<h2 class="contact-section__heading">
+			<h2 class="contact-section__heading" id="contact-heading">
 				Get In Touch
-				<span class="contact-section__heading-underline"></span>
+				<span class="contact-section__heading-underline" aria-hidden="true"></span>
 			</h2>
 
 			<p class="contact-section__description">

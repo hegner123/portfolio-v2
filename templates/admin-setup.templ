@@ -1,0 +1,64 @@
+package templates
+
+templ AdminSetupRequired() {
+	@Layout("Admin Setup Required - Michael Hegner") {
+		<div class="admin-setup">
+			<div class="admin-setup__container">
+				<div class="admin-setup__icon">🔒</div>
+				<h1 class="admin-setup__title">Admin Access Not Configured</h1>
+				<p class="admin-setup__message">
+					Admin credentials are not set up yet. To access the admin dashboard, you need to configure authentication.
+				</p>
+
+				<div class="admin-setup__instructions">
+					<h2 class="admin-setup__heading">Setup Instructions</h2>
+
+					<div class="admin-setup__step">
+						<div class="admin-setup__step-number">1</div>
+						<div class="admin-setup__step-content">
+							<h3>Create a .env file</h3>
+							<p>In your project root directory, create a file named <code>.env</code></p>
+							<pre class="admin-setup__code">touch .env</pre>
+						</div>
+					</div>
+
+					<div class="admin-setup__step">
+						<div class="admin-setup__step-number">2</div>
+						<div class="admin-setup__step-content">
+							<h3>Add your credentials</h3>
+							<p>Add the following lines to your <code>.env</code> file:</p>
+							<pre class="admin-setup__code">ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your-secure-password-here
+PORT=8080</pre>
+						</div>
+					</div>
+
+					<div class="admin-setup__step">
+						<div class="admin-setup__step-number">3</div>
+						<div class="admin-setup__step-content">
+							<h3>Restart the server</h3>
+							<p>Stop and restart your application:</p>
+							<pre class="admin-setup__code">go run main.go</pre>
+						</div>
+					</div>
+
+					<div class="admin-setup__step">
+						<div class="admin-setup__step-number">4</div>
+						<div class="admin-setup__step-content">
+							<h3>Access the admin dashboard</h3>
+							<p>Visit <code>/admin</code> and enter your credentials</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="admin-setup__note">
+					<strong>Note:</strong> Make sure to add <code>.env</code> to your <code>.gitignore</code> file to keep your credentials secure.
+				</div>
+
+				<div class="admin-setup__actions">
+					<a href="/" class="btn btn--secondary">← Back to Home</a>
+				</div>
+			</div>
+		</div>
+	}
+}

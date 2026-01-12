@@ -1,3 +1,12 @@
+/**
+ * Project Feed Component
+ *
+ * Responsive breakpoints (from design-system.css):
+ * - Mobile (xs): 480px and below
+ * - Tablet (md): 768px and below
+ * - Desktop (lg): 1024px and above
+ */
+
 /* Project Feed Section */
 .project-feed {
     min-height: 100vh;
@@ -52,7 +61,7 @@
     border: var(--border-accent);
     border-radius: 16px;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     position: relative;
     display: flex;
     flex-direction: column;
@@ -103,7 +112,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform var(--duration-slower) var(--ease-in-out);
 }
 
 .project-card:hover .project-card__image {
@@ -170,7 +179,7 @@
     border-radius: 20px;
     font-size: 0.875rem;
     color: var(--color-accent-blue);
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .project-card:hover .project-card__tech-tag {
@@ -192,7 +201,7 @@
     font-size: 1rem;
     font-weight: 600;
     color: var(--color-accent-blue);
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .project-card:hover .project-card__view-more {
@@ -217,7 +226,7 @@
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     box-shadow: var(--shadow-accent);
     position: relative;
     overflow: hidden;

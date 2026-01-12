@@ -6,14 +6,21 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/joho/godotenv"
 	"portfolio-v2/database"
 	"portfolio-v2/handlers"
+	"portfolio-v2/middleware"
 	"portfolio-v2/templates"
 )
 
 var db *sql.DB
 
 func main() {
+	// Load .env file if it exists
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using system environment variables")
+	}
+
 	var err error
 
 	// Initialize database
@@ -23,25 +30,25 @@ func main() {
 	}
 	defer db.Close()
 
-	// Seed database with sample blog posts
-	if err := database.SeedBlogPosts(db); err != nil {
-		log.Printf("Warning: Failed to seed blog posts: %v", err)
-	}
-
 	// Seed database with sample projects
 	if err := database.SeedProjects(db); err != nil {
 		log.Printf("Warning: Failed to seed projects: %v", err)
 	}
 
+	// Custom ServeMux for 404 handling
+	mux := http.NewServeMux()
+
 	// Static file server
 	fs := http.FileServer(http.Dir("./static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// Routes
-	http.HandleFunc("/", homeHandler)
-	http.HandleFunc("/blog/", handlers.BlogPostViewHandler(db))
-	http.HandleFunc("/project/", handlers.ProjectViewHandler(db))
-	http.HandleFunc("/new-blog", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", homeHandler)
+	mux.HandleFunc("/blog/", handlers.BlogPostViewHandler(db))
+	mux.HandleFunc("/project/", handlers.ProjectViewHandler(db))
+	// Admin routes - protected with HTTP Basic Auth
+	mux.HandleFunc("/admin", middleware.BasicAuth(handlers.AdminDashboardHandler(db)))
+	mux.HandleFunc("/admin/blog/new", middleware.BasicAuth(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			handlers.NewBlogPageHandler(w, r)
 		} else if r.Method == http.MethodPost {
@@ -49,19 +56,93 @@ func main() {
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
+	}))
+	mux.HandleFunc("/admin/project/new", middleware.BasicAuth(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			handlers.NewProjectPageHandler(w, r)
+		} else if r.Method == http.MethodPost {
+			handlers.CreateProjectHandler(db)(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	}))
+	// Edit routes - protected with HTTP Basic Auth
+	mux.HandleFunc("/admin/blog/delete/", middleware.BasicAuth(handlers.DeleteBlogHandler(db)))
+	mux.HandleFunc("/admin/blog/", middleware.BasicAuth(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			handlers.EditBlogPageHandler(db)(w, r)
+		} else if r.Method == http.MethodPost {
+			handlers.UpdateBlogHandler(db)(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	}))
+	mux.HandleFunc("/admin/project/delete/", middleware.BasicAuth(handlers.DeleteProjectHandler(db)))
+	mux.HandleFunc("/admin/project/", middleware.BasicAuth(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			handlers.EditProjectPageHandler(db)(w, r)
+		} else if r.Method == http.MethodPost {
+			handlers.UpdateProjectHandler(db)(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	}))
+	mux.HandleFunc("/api/blog/posts", handlers.BlogPostsAPIHandler(db))
+	mux.HandleFunc("/api/projects", handlers.ProjectsAPIHandler(db))
+
+	// Wrap mux with 404 handler
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Create a custom ResponseWriter to capture the status code
+		rw := &responseWriter{ResponseWriter: w, status: http.StatusOK}
+		mux.ServeHTTP(rw, r)
+
+		// If the status is 404 and nothing was written, show custom 404 page
+		if rw.status == http.StatusNotFound && !rw.written {
+			handlers.NotFoundHandler(w, r)
+		}
 	})
-	http.HandleFunc("/api/blog/posts", handlers.BlogPostsAPIHandler(db))
-	http.HandleFunc("/api/projects", handlers.ProjectsAPIHandler(db))
 
 	// Start server
 	port := "8080"
 	fmt.Printf("Server starting on http://localhost:%s\n", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatal(err)
 	}
 }
 
+// responseWriter wraps http.ResponseWriter to capture status code
+type responseWriter struct {
+	http.ResponseWriter
+	status       int
+	headerWritten bool
+	written      bool
+}
+
+func (rw *responseWriter) WriteHeader(status int) {
+	if !rw.headerWritten {
+		rw.status = status
+		rw.headerWritten = true
+		rw.ResponseWriter.WriteHeader(status)
+	}
+}
+
+func (rw *responseWriter) Write(b []byte) (int, error) {
+	// If header wasn't written yet, write it now with current status
+	if !rw.headerWritten {
+		rw.WriteHeader(rw.status)
+	}
+	rw.written = true
+	return rw.ResponseWriter.Write(b)
+}
+
 func homeHandler(w http.ResponseWriter, r *http.Request) {
+	// Only handle exact "/" path, not catch-all
+	if r.URL.Path != "/" {
+		// Set 404 status but don't write anything - let the wrapper handle it
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return

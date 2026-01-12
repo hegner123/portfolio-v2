@@ -1,0 +1,55 @@
+package templates
+
+templ NotFound() {
+	@Layout("Page Not Found - Michael Hegner") {
+		<div class="error-page">
+			<div class="error-page__container">
+				<div class="error-page__content">
+					<div class="error-page__code">404</div>
+					<h1 class="error-page__title">Page Not Found</h1>
+					<p class="error-page__message">
+						The page you're looking for doesn't exist or has been moved.
+					</p>
+
+					<div class="error-page__suggestions">
+						<h2 class="error-page__suggestions-title">Here's what you can do:</h2>
+						<ul class="error-page__suggestions-list">
+							<li>
+								<a href="/" class="error-page__link">Go back home</a>
+							</li>
+							<li>
+								<a href="/#blog" class="error-page__link">Check out the blog</a>
+							</li>
+							<li>
+								<a href="/#projects" class="error-page__link">View projects</a>
+							</li>
+							<li>
+								<a href="/#contact" class="error-page__link">Get in touch</a>
+							</li>
+						</ul>
+					</div>
+
+					<div class="error-page__actions">
+						<a href="/" class="btn btn--primary">
+							← Back to Home
+						</a>
+					</div>
+				</div>
+
+				<div class="error-page__illustration">
+					<div class="error-page__grid">
+						<div class="error-page__grid-item"></div>
+						<div class="error-page__grid-item"></div>
+						<div class="error-page__grid-item"></div>
+						<div class="error-page__grid-item"></div>
+						<div class="error-page__grid-item error-page__grid-item--missing"></div>
+						<div class="error-page__grid-item"></div>
+						<div class="error-page__grid-item"></div>
+						<div class="error-page__grid-item"></div>
+						<div class="error-page__grid-item"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}

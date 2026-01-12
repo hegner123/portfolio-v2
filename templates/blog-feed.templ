@@ -7,20 +7,22 @@ import (
 
 // BlogFeed is the main blog section component
 templ BlogFeed(posts []models.BlogPostPreview, hasMore bool, nextPage int, tags []string) {
-	<section id="blog" class="blog-feed">
+	<section id="blog" class="blog-feed" aria-labelledby="blog-heading">
 		<div class="blog-feed__container">
-			<h2 class="blog-feed__heading">
+			<h2 class="blog-feed__heading" id="blog-heading">
 				Recent Writing
-				<span class="blog-feed__heading-underline"></span>
+				<span class="blog-feed__heading-underline" aria-hidden="true"></span>
 			</h2>
 
 			if len(tags) > 0 {
-				<div class="blog-feed__filters">
+				<div class="blog-feed__filters" role="group" aria-label="Filter blog posts by tag">
 					<button
 						class="blog-feed__filter-tag blog-feed__filter-tag--active"
 						hx-get="/api/blog/posts?page=1"
 						hx-target="#posts-list"
 						hx-swap="innerHTML"
+						aria-label="Show all blog posts"
+						aria-pressed="true"
 					>
 						All
 					</button>
@@ -30,6 +32,8 @@ templ BlogFeed(posts []models.BlogPostPreview, hasMore bool, nextPage int, tags 
 							hx-get={ "/api/blog/posts?page=1&tag=" + templ.EscapeString(tag) }
 							hx-target="#posts-list"
 							hx-swap="innerHTML"
+							aria-label={ "Filter posts by " + tag }
+							aria-pressed="false"
 						>
 							{ tag }
 						</button>
@@ -77,7 +81,7 @@ templ LoadMoreButton(nextPage int, tagFilter string) {
 		hx-target="this"
 		hx-swap="beforebegin"
 	>
-		<button class="blog-feed__load-more">
+		<button class="blog-feed__load-more" aria-label="Load more blog posts">
 			Load More Posts
 		</button>
 	</div>

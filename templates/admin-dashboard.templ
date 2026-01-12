@@ -1,0 +1,236 @@
+package templates
+
+import "portfolio-v2/models"
+import "strconv"
+import "time"
+
+templ AdminDashboard(blogs []models.BlogPost, projects []models.Project) {
+	@Layout("Admin Dashboard - Michael Hegner") {
+		<div class="admin-dashboard">
+			<div class="admin-dashboard__container">
+				<header class="admin-dashboard__header">
+					<div class="admin-dashboard__header-left">
+						<h1 class="admin-dashboard__title">Admin Dashboard</h1>
+						<div class="admin-dashboard__user">
+							<span class="admin-dashboard__user-icon">👤</span>
+							<span class="admin-dashboard__user-name">Logged in as admin</span>
+						</div>
+					</div>
+					<div class="admin-dashboard__actions">
+						<a href="/" class="btn btn--secondary">
+							← Back to Site
+						</a>
+						<a href="/admin/blog/new" class="btn btn--primary">
+							<span class="btn__icon">+</span>
+							New Blog Post
+						</a>
+						<a href="/admin/project/new" class="btn btn--primary">
+							<span class="btn__icon">+</span>
+							New Project
+						</a>
+					</div>
+				</header>
+
+				<div class="admin-dashboard__stats">
+					<div class="stat-card">
+						<div class="stat-card__value">{ strconv.Itoa(len(blogs)) }</div>
+						<div class="stat-card__label">Blog Posts</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-card__value">{ strconv.Itoa(len(projects)) }</div>
+						<div class="stat-card__label">Projects</div>
+					</div>
+					<div class="stat-card">
+						<div class="stat-card__value">{ strconv.Itoa(countFeatured(projects)) }</div>
+						<div class="stat-card__label">Featured Projects</div>
+					</div>
+				</div>
+
+				<section class="admin-dashboard__section">
+					<div class="section-header">
+						<h2 class="section-header__title">Blog Posts</h2>
+						<a href="/admin/blog/new" class="section-header__link">Create New</a>
+					</div>
+
+					if len(blogs) == 0 {
+						<div class="empty-state">
+							<p class="empty-state__text">No blog posts yet</p>
+							<a href="/admin/blog/new" class="btn btn--secondary">Create Your First Post</a>
+						</div>
+					} else {
+						<div class="content-table">
+							<table class="table">
+								<thead>
+									<tr>
+										<th class="table__header">Title</th>
+										<th class="table__header table__header--desktop">Tags</th>
+										<th class="table__header table__header--desktop">Published</th>
+										<th class="table__header table__header--actions">Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									for _, blog := range blogs {
+										<tr class="table__row">
+											<td class="table__cell table__cell--title">
+												<a href={ templ.SafeURL("/blog/" + blog.Slug) } class="table__link">
+													{ blog.Title }
+												</a>
+												<div class="table__mobile-meta">
+													<span class="table__mobile-tags">{ formatTags(blog.Tags) }</span>
+													<span class="table__mobile-date">{ formatDate(blog.PublishedAt) }</span>
+												</div>
+											</td>
+											<td class="table__cell table__cell--desktop">
+												<div class="tag-list">
+													for _, tag := range blog.Tags {
+														<span class="tag">{ tag }</span>
+													}
+												</div>
+											</td>
+											<td class="table__cell table__cell--desktop">
+												{ formatDate(blog.PublishedAt) }
+											</td>
+											<td class="table__cell table__cell--actions">
+												<div class="action-buttons">
+													<a href={ templ.SafeURL("/admin/blog/" + strconv.FormatInt(blog.ID, 10)) } class="btn-action btn-action--edit" title="Edit">
+														Edit
+													</a>
+													<a href={ templ.SafeURL("/blog/" + blog.Slug) } class="btn-action btn-action--view" title="View" target="_blank">
+														View
+													</a>
+													<form method="POST" action={ templ.SafeURL("/admin/blog/delete/" + strconv.FormatInt(blog.ID, 10)) } class="delete-form" onsubmit="return confirm('Are you sure you want to delete this blog post? This action cannot be undone.');">
+														<button type="submit" class="btn-action btn-action--delete" title="Delete">
+															Delete
+														</button>
+													</form>
+												</div>
+											</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+					}
+				</section>
+
+				<section class="admin-dashboard__section">
+					<div class="section-header">
+						<h2 class="section-header__title">Projects</h2>
+						<a href="/admin/project/new" class="section-header__link">Create New</a>
+					</div>
+
+					if len(projects) == 0 {
+						<div class="empty-state">
+							<p class="empty-state__text">No projects yet</p>
+							<a href="/admin/project/new" class="btn btn--secondary">Create Your First Project</a>
+						</div>
+					} else {
+						<div class="content-table">
+							<table class="table">
+								<thead>
+									<tr>
+										<th class="table__header">Title</th>
+										<th class="table__header table__header--desktop">Technologies</th>
+										<th class="table__header table__header--desktop">Status</th>
+										<th class="table__header table__header--actions">Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									for _, project := range projects {
+										<tr class="table__row">
+											<td class="table__cell table__cell--title">
+												<a href={ templ.SafeURL("/project/" + project.Slug) } class="table__link">
+													{ project.Title }
+												</a>
+												<div class="table__mobile-meta">
+													<span class="table__mobile-tags">{ formatTechnologies(project.Technologies) }</span>
+													if project.Featured {
+														<span class="badge badge--featured">Featured</span>
+													}
+												</div>
+											</td>
+											<td class="table__cell table__cell--desktop">
+												<div class="tag-list">
+													for _, tech := range project.Technologies {
+														<span class="tag tag--tech">{ tech }</span>
+													}
+												</div>
+											</td>
+											<td class="table__cell table__cell--desktop">
+												if project.Featured {
+													<span class="badge badge--featured">Featured</span>
+												} else {
+													<span class="badge badge--normal">Normal</span>
+												}
+											</td>
+											<td class="table__cell table__cell--actions">
+												<div class="action-buttons">
+													<a href={ templ.SafeURL("/admin/project/" + strconv.FormatInt(project.ID, 10)) } class="btn-action btn-action--edit" title="Edit">
+														Edit
+													</a>
+													<a href={ templ.SafeURL("/project/" + project.Slug) } class="btn-action btn-action--view" title="View" target="_blank">
+														View
+													</a>
+													<form method="POST" action={ templ.SafeURL("/admin/project/delete/" + strconv.FormatInt(project.ID, 10)) } class="delete-form" onsubmit="return confirm('Are you sure you want to delete this project? This action cannot be undone.');">
+														<button type="submit" class="btn-action btn-action--delete" title="Delete">
+															Delete
+														</button>
+													</form>
+												</div>
+											</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+					}
+				</section>
+			</div>
+		</div>
+	}
+}
+
+func countFeatured(projects []models.Project) int {
+	count := 0
+	for _, p := range projects {
+		if p.Featured {
+			count++
+		}
+	}
+	return count
+}
+
+func formatTags(tags []string) string {
+	if len(tags) == 0 {
+		return "No tags"
+	}
+	if len(tags) <= 2 {
+		return joinStrings(tags, ", ")
+	}
+	return joinStrings(tags[:2], ", ") + "..."
+}
+
+func formatTechnologies(techs []string) string {
+	if len(techs) == 0 {
+		return "No technologies"
+	}
+	if len(techs) <= 2 {
+		return joinStrings(techs, ", ")
+	}
+	return joinStrings(techs[:2], ", ") + "..."
+}
+
+func joinStrings(strs []string, sep string) string {
+	result := ""
+	for i, s := range strs {
+		if i > 0 {
+			result += sep
+		}
+		result += s
+	}
+	return result
+}
+
+func formatDate(t time.Time) string {
+	return t.Format("Jan 2, 2006")
+}

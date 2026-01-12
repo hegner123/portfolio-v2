@@ -1,6 +1,13 @@
 package templates
 
 import (
+	"bytes"
+
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
+
 	"portfolio-v2/models"
 )
 
@@ -62,9 +69,29 @@ templ BlogPostNotFound() {
 	}
 }
 
-// formatMarkdown converts markdown to HTML (simple implementation)
+// formatMarkdown converts markdown to HTML using goldmark
 func formatMarkdown(content string) string {
-	// For now, preserve line breaks and convert to paragraphs
-	// In the future, you can use a proper markdown library like goldmark
-	return "<pre class=\"blog-post-view__markdown\">" + content + "</pre>"
+	md := goldmark.New(
+		goldmark.WithExtensions(
+			extension.GFM,        // GitHub Flavored Markdown
+			extension.Table,      // Tables
+			extension.Strikethrough, // Strikethrough text
+			extension.Linkify,    // Auto-link URLs
+			extension.TaskList,   // Task lists
+		),
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(), // Auto-generate heading IDs
+		),
+		goldmark.WithRendererOptions(
+			html.WithHardWraps(), // Convert line breaks to <br>
+			html.WithXHTML(),     // XHTML-compliant output
+		),
+	)
+
+	var buf bytes.Buffer
+	if err := md.Convert([]byte(content), &buf); err != nil {
+		return "<p>Error rendering content</p>"
+	}
+
+	return buf.String()
 }

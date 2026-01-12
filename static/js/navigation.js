@@ -8,6 +8,21 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!navigation) return;
 
     // ========================================
+    // Feature 0: Fix Navigation Links for Non-Home Pages
+    // ========================================
+    const isHomePage = window.location.pathname === '/';
+
+    if (!isHomePage) {
+        // On non-home pages, convert anchor links to full paths
+        navLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (href && href.startsWith('#')) {
+                link.setAttribute('href', '/' + href);
+            }
+        });
+    }
+
+    // ========================================
     // Feature 1: Intersection Observer for Active Section Detection
     // ========================================
     if (sections.length > 0 && navLinks.length > 0) {

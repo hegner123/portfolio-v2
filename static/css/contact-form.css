@@ -1,3 +1,12 @@
+/**
+ * Contact Form Component
+ *
+ * Responsive breakpoints (from design-system.css):
+ * - Mobile (xs): 480px and below
+ * - Tablet (md): 768px and below
+ * - Desktop (lg): 1024px and above
+ */
+
 /* Contact Section */
 .contact-section {
     min-height: 100vh;
@@ -81,7 +90,7 @@
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(102, 126, 234, 0.2);
     border-radius: 12px;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .contact-info__item:hover {
@@ -126,7 +135,7 @@
     font-weight: 600;
     color: var(--color-text-secondary);
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     display: inline-block;
     background: var(--gradient-accent);
     background-clip: text;

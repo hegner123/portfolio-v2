@@ -9,7 +9,7 @@ templ NewBlog() {
 					<span class="new-blog__heading-underline"></span>
 				</h1>
 
-				<form class="new-blog__form" method="POST" action="/new-blog">
+				<form class="new-blog__form" method="POST" action="/admin/blog/new">
 					<div class="new-blog__field">
 						<label for="title" class="new-blog__label">Title</label>
 						<input
@@ -80,7 +80,7 @@ templ NewBlogSuccess(slug string) {
 					<p class="new-blog__success-message">Your blog post has been successfully created.</p>
 					<div class="new-blog__success-actions">
 						<a href="/" class="new-blog__success-button">Go to Home</a>
-						<a href="/new-blog" class="new-blog__success-link">Create Another Post</a>
+						<a href="/admin/blog/new" class="new-blog__success-link">Create Another Post</a>
 					</div>
 				</div>
 			</div>

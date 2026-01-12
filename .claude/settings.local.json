@@ -13,7 +13,9 @@
       "Bash(curl:*)",
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
-      "Bash(go run:*)"
+      "Bash(go run:*)",
+      "Bash(chmod:*)",
+      "Bash(./scripts/sync-db.sh:*)"
     ]
   }
 }

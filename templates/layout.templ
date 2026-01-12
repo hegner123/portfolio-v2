@@ -6,8 +6,49 @@ templ Layout(title string) {
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<meta name="description" content="Michael's Portfolio"/>
+
+			// SEO Meta Tags
+			<meta name="description" content="Michael Hegner - Senior Software Engineer specializing in Go, HTMX, and full-stack development. Building pragmatic solutions with modern web technologies."/>
+			<meta name="keywords" content="Michael Hegner, Software Engineer, Full Stack Developer, Go Developer, HTMX, React, Node.js, Portfolio"/>
+			<meta name="author" content="Michael Hegner"/>
+			<meta name="robots" content="index, follow"/>
+			<meta name="language" content="English"/>
+			<meta name="revisit-after" content="7 days"/>
+
+			// Open Graph / Social Media Tags
+			<meta property="og:type" content="website"/>
+			<meta property="og:title" content={ title }/>
+			<meta property="og:description" content="Senior Software Engineer specializing in Go, HTMX, and full-stack development. Building pragmatic solutions with modern web technologies."/>
+			<meta property="og:site_name" content="Michael Hegner - Portfolio"/>
+			<meta property="og:locale" content="en_US"/>
+
+			// Twitter Card Tags
+			<meta name="twitter:card" content="summary_large_image"/>
+			<meta name="twitter:title" content={ title }/>
+			<meta name="twitter:description" content="Senior Software Engineer specializing in Go, HTMX, and full-stack development."/>
+
+			// Theme Color for Mobile Browsers
+			<meta name="theme-color" content="#000000"/>
+			<meta name="msapplication-TileColor" content="#000000"/>
+
+			// Favicon
+			<link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png"/>
+			<link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png"/>
+			<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png"/>
+			<link rel="manifest" href="/static/site.webmanifest"/>
+
+			// Performance Hints
+			<link rel="preconnect" href="https://unpkg.com"/>
+			<link rel="dns-prefetch" href="https://unpkg.com"/>
+
 			<title>{ title }</title>
+
+			// Preload Critical CSS
+			<link rel="preload" href="/static/css/design-system.css" as="style"/>
+			<link rel="preload" href="/static/css/styles.css" as="style"/>
+
+			// Stylesheets
+			<link rel="stylesheet" href="/static/css/design-system.css"/>
 			<link rel="stylesheet" href="/static/css/styles.css"/>
 			<link rel="stylesheet" href="/static/css/navigation.css"/>
 			<link rel="stylesheet" href="/static/css/blog-feed.css"/>
@@ -15,8 +56,14 @@ templ Layout(title string) {
 			<link rel="stylesheet" href="/static/css/new-blog.css"/>
 			<link rel="stylesheet" href="/static/css/project-feed.css"/>
 			<link rel="stylesheet" href="/static/css/project-view.css"/>
+			<link rel="stylesheet" href="/static/css/new-project.css"/>
 			<link rel="stylesheet" href="/static/css/contact-form.css"/>
-			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+			<link rel="stylesheet" href="/static/css/admin-dashboard.css"/>
+			<link rel="stylesheet" href="/static/css/admin-setup.css"/>
+			<link rel="stylesheet" href="/static/css/error-page.css"/>
+
+			// Scripts - defer to improve page load performance
+			<script src="https://unpkg.com/htmx.org@1.9.10" defer integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
 			<script src="/static/js/hero-grid.js" defer></script>
 			<script src="/static/js/skills-expand.js" defer></script>
 			<script src="/static/js/blog-filter.js" defer></script>

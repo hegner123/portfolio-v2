@@ -6,10 +6,23 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Grid configuration constants
-    const ITEM_SIZE = 60; // Size of each square in pixels
-    const GAP = 8; // Gap between squares in pixels
-    const PADDING = 8; // Grid padding in pixels
+    // Grid configuration - responsive based on screen size
+    function getGridConfig() {
+        const width = window.innerWidth;
+
+        // Mobile: <= 768px
+        if (width <= 768) {
+            return { ITEM_SIZE: 40, GAP: 6, PADDING: 6 };
+        }
+        // Tablet: 769px - 1024px
+        else if (width <= 1024) {
+            return { ITEM_SIZE: 50, GAP: 7, PADDING: 7 };
+        }
+        // Desktop: > 1024px
+        else {
+            return { ITEM_SIZE: 60, GAP: 8, PADDING: 8 };
+        }
+    }
 
     const itemMomentum = new Map();
 
@@ -19,16 +32,19 @@ document.addEventListener('DOMContentLoaded', function() {
         heroGrid.innerHTML = '';
         itemMomentum.clear();
 
+        // Get responsive grid configuration
+        const config = getGridConfig();
+
         // Get grid dimensions
         const gridRect = heroGrid.getBoundingClientRect();
-        const availableWidth = gridRect.width - (PADDING * 2);
-        const availableHeight = gridRect.height - (PADDING * 2);
+        const availableWidth = gridRect.width - (config.PADDING * 2);
+        const availableHeight = gridRect.height - (config.PADDING * 2);
 
         // Calculate number of columns and rows needed to fill the space
         // Formula: floor((available + gap) / (size + gap))
         // This accounts for the fact that the last item doesn't need a gap after it
-        const cols = Math.floor((availableWidth + GAP) / (ITEM_SIZE + GAP));
-        const rows = Math.floor((availableHeight + GAP) / (ITEM_SIZE + GAP));
+        const cols = Math.floor((availableWidth + config.GAP) / (config.ITEM_SIZE + config.GAP));
+        const rows = Math.floor((availableHeight + config.GAP) / (config.ITEM_SIZE + config.GAP));
         const totalItems = cols * rows;
 
         // Create grid items with momentum tracking
@@ -56,15 +72,24 @@ document.addEventListener('DOMContentLoaded', function() {
     let resetTimer = null;
     let squareless = false;
 
-    // Track mouse position globally on the document
+    // Track mouse/touch position globally on the document
     document.addEventListener('mousemove', function(e) {
         mouseX = e.clientX;
         mouseY = e.clientY;
     });
 
-    // Track mouse down state globally on the hero section
+    // Touch support for mobile/tablet
+    document.addEventListener('touchmove', function(e) {
+        if (e.touches.length > 0) {
+            mouseX = e.touches[0].clientX;
+            mouseY = e.touches[0].clientY;
+        }
+    }, { passive: true });
+
+    // Track mouse/touch down state globally on the hero section
     const heroSection = document.querySelector('.hero-section');
     if (heroSection) {
+        // Mouse events
         heroSection.addEventListener('mousedown', function() {
             if (squareless) return;
 
@@ -94,12 +119,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 500);
             }
         });
+
+        // Touch events for mobile/tablet
+        heroSection.addEventListener('touchstart', function(e) {
+            if (squareless) return;
+
+            isMouseDown = true;
+            partAmount++;
+
+            // Update position for touch
+            if (e.touches.length > 0) {
+                mouseX = e.touches[0].clientX;
+                mouseY = e.touches[0].clientY;
+            }
+
+            // Clear existing reset timer
+            if (resetTimer) {
+                clearTimeout(resetTimer);
+                resetTimer = null;
+            }
+
+            // Check for explosion state
+            if (partAmount >= 10) {
+                explodeSquares();
+            }
+        }, { passive: true });
+
+        heroSection.addEventListener('touchend', function() {
+            isMouseDown = false;
+
+            // Start 0.5s timer to reset partAmount
+            if (!squareless && partAmount < 10) {
+                resetTimer = setTimeout(function() {
+                    partAmount = 0;
+                    resetTimer = null;
+                }, 500);
+            }
+        }, { passive: true });
     }
 
-    // Also track mouse up outside the hero section (but don't start timer)
+    // Also track mouse/touch up outside the hero section (but don't start timer)
     document.addEventListener('mouseup', function() {
         isMouseDown = false;
     });
+
+    document.addEventListener('touchend', function() {
+        isMouseDown = false;
+    }, { passive: true });
 
     // Explode squares off viewport
     function explodeSquares() {
@@ -120,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const normalizedY = deltaY / distance;
             const explosionForce = 2000;
 
-            item.style.transition = 'transform 0.8s ease-out, opacity 0.8s ease-out';
+            item.style.transition = 'transform 2s ease-in-out, opacity 2s ease-out';
             item.style.transform = `translate(${normalizedX * explosionForce}px, ${normalizedY * explosionForce}px)`;
             item.style.opacity = '0';
         });
@@ -128,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Delete squares after animation
         setTimeout(function() {
             heroGrid.innerHTML = '';
-        }, 800);
+        }, 2000);
     }
 
     // Animation loop for gravitating effect with momentum
@@ -151,8 +217,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
             // Maximum effect distance (constant, not scaled by partAmount)
-            // Set to 1 square (ITEM_SIZE)
-            const maxDistance = ITEM_SIZE;
+            // Set to 1 square (responsive ITEM_SIZE)
+            const config = getGridConfig();
+            const maxDistance = config.ITEM_SIZE;
             const partMultiplier = Math.max(1, partAmount);
 
             let forceX = 0;

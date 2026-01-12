@@ -188,6 +188,140 @@ func CreateBlogPost(db *sql.DB, title, excerpt, content string, tags []string) (
 	return slug, nil
 }
 
+// UpdateBlogPost updates an existing blog post by ID
+func UpdateBlogPost(db *sql.DB, id int, title, excerpt, content string, tags []string) error {
+	tagsJSON, err := json.Marshal(tags)
+	if err != nil {
+		return fmt.Errorf("marshal tags: %w", err)
+	}
+
+	query := `
+		UPDATE blog_posts
+		SET title = ?, excerpt = ?, content = ?, tags = ?
+		WHERE id = ?
+	`
+
+	result, err := db.Exec(query, title, excerpt, content, string(tagsJSON), id)
+	if err != nil {
+		return fmt.Errorf("update blog post: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("check rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("blog post with id %d not found", id)
+	}
+
+	return nil
+}
+
+// GetBlogPostByID retrieves a single blog post by ID (for editing)
+func GetBlogPostByID(db *sql.DB, id int) (*models.BlogPost, error) {
+	query := `
+		SELECT id, title, slug, excerpt, content, published_at, tags, author
+		FROM blog_posts
+		WHERE id = ?
+	`
+
+	var post models.BlogPost
+	var tagsJSON string
+
+	err := db.QueryRow(query, id).Scan(
+		&post.ID,
+		&post.Title,
+		&post.Slug,
+		&post.Excerpt,
+		&post.Content,
+		&post.PublishedAt,
+		&tagsJSON,
+		&post.Author,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("query blog post: %w", err)
+	}
+
+	if err := json.Unmarshal([]byte(tagsJSON), &post.Tags); err != nil {
+		post.Tags = []string{}
+	}
+
+	return &post, nil
+}
+
+// GetAllBlogPosts retrieves all blog posts for admin dashboard
+func GetAllBlogPosts(db *sql.DB) ([]models.BlogPost, error) {
+	query := `
+		SELECT id, title, slug, excerpt, content, published_at, tags, author
+		FROM blog_posts
+		ORDER BY published_at DESC
+	`
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("query all blog posts: %w", err)
+	}
+	defer rows.Close()
+
+	var posts []models.BlogPost
+	for rows.Next() {
+		var post models.BlogPost
+		var tagsJSON string
+
+		err := rows.Scan(
+			&post.ID,
+			&post.Title,
+			&post.Slug,
+			&post.Excerpt,
+			&post.Content,
+			&post.PublishedAt,
+			&tagsJSON,
+			&post.Author,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("scan blog post: %w", err)
+		}
+
+		if err := json.Unmarshal([]byte(tagsJSON), &post.Tags); err != nil {
+			post.Tags = []string{}
+		}
+
+		posts = append(posts, post)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate blog posts: %w", err)
+	}
+
+	return posts, nil
+}
+
+// DeleteBlogPost deletes a blog post by ID
+func DeleteBlogPost(db *sql.DB, id int) error {
+	query := `DELETE FROM blog_posts WHERE id = ?`
+
+	result, err := db.Exec(query, id)
+	if err != nil {
+		return fmt.Errorf("delete blog post: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("check rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("blog post with id %d not found", id)
+	}
+
+	return nil
+}
+
 // generateSlug creates a URL-friendly slug from a title
 func generateSlug(title string) string {
 	slug := strings.ToLower(title)
