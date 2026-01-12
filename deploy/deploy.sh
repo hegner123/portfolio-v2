@@ -14,8 +14,15 @@ echo "========================================="
 # Step 0: Check/Set Admin Password
 echo ""
 echo "Step 0: Admin Authentication Setup..."
+
+# Try to load from .env file first
+if [ -f "$LOCAL_DIR/.env" ] && [ -z "$ADMIN_PASSWORD" ]; then
+    echo "Loading credentials from .env file..."
+    export $(grep -v '^#' "$LOCAL_DIR/.env" | grep ADMIN_PASSWORD | xargs)
+fi
+
 if [ -z "$ADMIN_PASSWORD" ]; then
-    echo "ADMIN_PASSWORD environment variable not set."
+    echo "ADMIN_PASSWORD not found in .env file or environment."
     echo "Please enter a secure password for admin access:"
     read -s -p "Admin Password: " ADMIN_PASSWORD
     echo ""
