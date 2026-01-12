@@ -128,8 +128,6 @@ func UpdateBlogHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// Render success page
-		component := templates.EditBlogSuccess()
-		component.Render(r.Context(), w)
+		http.Redirect(w, r, "/admin", http.StatusSeeOther)
 	}
 }

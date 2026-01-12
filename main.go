@@ -5,11 +5,17 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/joho/godotenv"
+	"golang.org/x/crypto/bcrypt"
+
 	"portfolio-v2/database"
 	"portfolio-v2/handlers"
 	"portfolio-v2/middleware"
+	"portfolio-v2/ratelimit"
+	"portfolio-v2/session"
 	"portfolio-v2/templates"
 )
 
@@ -21,7 +27,24 @@ func main() {
 		log.Println("No .env file found, using system environment variables")
 	}
 
-	var err error
+	// Hash admin password on startup
+	adminUser := os.Getenv("ADMIN_USERNAME")
+	adminPass := os.Getenv("ADMIN_PASSWORD")
+	if adminUser == "" || adminPass == "" {
+		log.Fatal("ADMIN_USERNAME and ADMIN_PASSWORD must be set in .env file")
+	}
+	hashedPassword, err := bcrypt.GenerateFromPassword(
+		[]byte(adminPass), bcrypt.DefaultCost)
+	if err != nil {
+		log.Fatalf("Failed to hash password: %v", err)
+	}
+
+	// Initialize session store (no timeout - sessions persist until logout)
+	sessionStore := session.NewStore()
+
+	// Initialize rate limiter (5 attempts, 15 minute window)
+	rateLimiter := ratelimit.NewLimiter(5, 15*time.Minute)
+	go rateLimiter.Cleanup()
 
 	// Initialize database
 	db, err = database.InitDB("./portfolio.db")
@@ -46,9 +69,22 @@ func main() {
 	mux.HandleFunc("/", homeHandler)
 	mux.HandleFunc("/blog/", handlers.BlogPostViewHandler(db))
 	mux.HandleFunc("/project/", handlers.ProjectViewHandler(db))
-	// Admin routes - protected with HTTP Basic Auth
-	mux.HandleFunc("/admin", middleware.BasicAuth(handlers.AdminDashboardHandler(db)))
-	mux.HandleFunc("/admin/blog/new", middleware.BasicAuth(func(w http.ResponseWriter, r *http.Request) {
+
+	// Authentication routes
+	mux.HandleFunc("/admin/login", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			handlers.LoginPageHandler(sessionStore)(w, r)
+		} else if r.Method == http.MethodPost {
+			handlers.LoginHandler(sessionStore, rateLimiter, hashedPassword, adminUser)(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+	mux.HandleFunc("/admin/logout", handlers.LogoutHandler(sessionStore))
+
+	// Admin routes - protected with session authentication
+	mux.HandleFunc("/admin", middleware.SessionAuth(sessionStore, true)(handlers.AdminDashboardHandler(db)))
+	mux.HandleFunc("/admin/blog/new", middleware.SessionAuth(sessionStore, true)(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			handlers.NewBlogPageHandler(w, r)
 		} else if r.Method == http.MethodPost {
@@ -57,7 +93,7 @@ func main() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	}))
-	mux.HandleFunc("/admin/project/new", middleware.BasicAuth(func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/admin/project/new", middleware.SessionAuth(sessionStore, true)(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			handlers.NewProjectPageHandler(w, r)
 		} else if r.Method == http.MethodPost {
@@ -66,9 +102,9 @@ func main() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	}))
-	// Edit routes - protected with HTTP Basic Auth
-	mux.HandleFunc("/admin/blog/delete/", middleware.BasicAuth(handlers.DeleteBlogHandler(db)))
-	mux.HandleFunc("/admin/blog/", middleware.BasicAuth(func(w http.ResponseWriter, r *http.Request) {
+	// Edit routes - protected with session authentication
+	mux.HandleFunc("/admin/blog/delete/", middleware.SessionAuth(sessionStore, true)(handlers.DeleteBlogHandler(db)))
+	mux.HandleFunc("/admin/blog/", middleware.SessionAuth(sessionStore, true)(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			handlers.EditBlogPageHandler(db)(w, r)
 		} else if r.Method == http.MethodPost {
@@ -77,8 +113,8 @@ func main() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	}))
-	mux.HandleFunc("/admin/project/delete/", middleware.BasicAuth(handlers.DeleteProjectHandler(db)))
-	mux.HandleFunc("/admin/project/", middleware.BasicAuth(func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/admin/project/delete/", middleware.SessionAuth(sessionStore, true)(handlers.DeleteProjectHandler(db)))
+	mux.HandleFunc("/admin/project/", middleware.SessionAuth(sessionStore, true)(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			handlers.EditProjectPageHandler(db)(w, r)
 		} else if r.Method == http.MethodPost {

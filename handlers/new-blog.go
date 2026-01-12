@@ -60,18 +60,13 @@ func CreateBlogPostHandler(db *sql.DB) http.HandlerFunc {
 			}
 		}
 
-		slug, err := database.CreateBlogPost(db, title, excerpt, content, tags)
+		_, err := database.CreateBlogPost(db, title, excerpt, content, tags)
 		if err != nil {
 			log.Printf("Error creating blog post: %v", err)
 			http.Error(w, "Error creating blog post", http.StatusInternalServerError)
 			return
 		}
 
-		component := templates.NewBlogSuccess(slug)
-		if err := component.Render(r.Context(), w); err != nil {
-			http.Error(w, "Error rendering template", http.StatusInternalServerError)
-			log.Printf("Template rendering error: %v", err)
-			return
-		}
+		http.Redirect(w, r, "/admin", http.StatusSeeOther)
 	}
 }

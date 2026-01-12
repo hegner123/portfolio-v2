@@ -90,7 +90,6 @@
 }
 
 .project-card:hover {
-    transform: translateY(-8px);
     border-color: var(--color-accent-blue);
     box-shadow: var(--shadow-accent);
 }
@@ -116,7 +115,6 @@
 }
 
 .project-card:hover .project-card__image {
-    transform: scale(1.05);
 }
 
 .project-card__featured-badge {
@@ -206,7 +204,6 @@
 
 .project-card:hover .project-card__view-more {
     color: var(--color-text-primary);
-    transform: translateX(4px);
 }
 
 /* Load More Button */
@@ -244,7 +241,6 @@
 }
 
 .project-feed__load-more:hover {
-    transform: translateY(-2px);
     box-shadow: 0 0 25px rgba(102, 126, 234, 0.4), 0 0 50px rgba(118, 75, 162, 0.3);
 }
 
@@ -253,7 +249,6 @@
 }
 
 .project-feed__load-more:active {
-    transform: translateY(0);
 }
 
 /* HTMX Loading State */

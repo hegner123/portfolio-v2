@@ -28,6 +28,11 @@ templ AdminDashboard(blogs []models.BlogPost, projects []models.Project) {
 							<span class="btn__icon">+</span>
 							New Project
 						</a>
+						<form method="POST" action="/admin/logout" style="display: inline;">
+							<button type="submit" class="btn btn--danger">
+								Logout
+							</button>
+						</form>
 					</div>
 				</header>
 

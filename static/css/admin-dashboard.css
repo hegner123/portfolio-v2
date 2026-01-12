@@ -86,7 +86,6 @@
 }
 
 .stat-card:hover {
-    transform: translateY(-4px);
     box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
 }
 
@@ -144,6 +143,8 @@
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
     font-weight: 500;
+    font-size: 1rem;
+    line-height: 1;
     text-decoration: none;
     transition: var(--transition-base);
     border: none;
@@ -157,7 +158,6 @@
 }
 
 .btn--primary:hover {
-    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
@@ -169,6 +169,16 @@
 
 .btn--secondary:hover {
     background: rgba(102, 126, 234, 0.1);
+}
+
+.btn--danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn--danger:hover {
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
 }
 
 .btn__icon {
@@ -368,7 +378,6 @@
 
 .btn-action--delete:hover {
     background: rgba(239, 68, 68, 0.1);
-    transform: translateY(-1px);
 }
 
 /* Responsive */

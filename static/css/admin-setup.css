@@ -182,7 +182,6 @@
 
 .btn--secondary:hover {
     background: rgba(102, 126, 234, 0.1);
-    transform: translateY(-2px);
 }
 
 /* Responsive */

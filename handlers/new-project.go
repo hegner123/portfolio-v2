@@ -85,11 +85,6 @@ func CreateProjectHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		component := templates.NewProjectSuccess(title)
-		if err := component.Render(r.Context(), w); err != nil {
-			http.Error(w, "Error rendering template", http.StatusInternalServerError)
-			log.Printf("Template rendering error: %v", err)
-			return
-		}
+		http.Redirect(w, r, "/admin", http.StatusSeeOther)
 	}
 }

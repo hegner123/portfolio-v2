@@ -15,7 +15,15 @@
       "Bash(xargs kill:*)",
       "Bash(go run:*)",
       "Bash(chmod:*)",
-      "Bash(./scripts/sync-db.sh:*)"
+      "Bash(./scripts/sync-db.sh:*)",
+      "Bash(fd:*)",
+      "Bash(while read -r file)",
+      "Bash(do)",
+      "Bash(if grep:*)",
+      "Bash(then)",
+      "Bash(echo:*)",
+      "Bash(fi)",
+      "Bash(done)"
     ]
   }
 }

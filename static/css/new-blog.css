@@ -123,12 +123,10 @@
 }
 
 .new-blog__submit:hover {
-    transform: translateY(-2px);
     box-shadow: 0 0 25px rgba(102, 126, 234, 0.4), 0 0 50px rgba(118, 75, 162, 0.3);
 }
 
 .new-blog__submit:active {
-    transform: translateY(0);
 }
 
 .new-blog__cancel {
@@ -199,7 +197,6 @@
 }
 
 .new-blog__success-button:hover {
-    transform: translateY(-2px);
     box-shadow: 0 0 25px rgba(102, 126, 234, 0.4), 0 0 50px rgba(118, 75, 162, 0.3);
 }
 

@@ -154,8 +154,6 @@ func UpdateProjectHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// Render success page
-		component := templates.EditProjectSuccess()
-		component.Render(r.Context(), w)
+		http.Redirect(w, r, "/admin", http.StatusSeeOther)
 	}
 }
