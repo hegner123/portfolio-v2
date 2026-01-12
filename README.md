@@ -68,6 +68,47 @@ go run main.go
 
 See `START.md` for development workflows and common tasks.
 
+## Deployment
+
+### Prerequisites
+1. **SSH Keys**: Set up SSH key authentication to your server (no password prompts)
+   ```bash
+   ssh-copy-id admin@your-server-ip
+   ```
+
+2. **Environment Variables**: Create a `.env` file from the example
+   ```bash
+   cp .env.example .env
+   ```
+   Edit `.env` and set your `ADMIN_PASSWORD` (10+ characters)
+
+### Deploy to Production
+
+**One-command deployment:**
+```bash
+./deploy/deploy.sh
+```
+
+This will:
+- Build Linux binary with pure Go SQLite (cross-compilation)
+- Sync files to server via rsync (fast, incremental)
+- Restart systemd service
+- Application available at configured domain
+
+**Full deployment with Caddy:**
+```bash
+./deploy/full-deploy.sh
+```
+
+Includes Caddy configuration for HTTPS (automatic Let's Encrypt certificates)
+
+### Architecture
+- **Server**: Linode VPS
+- **Web Server**: Caddy (reverse proxy with automatic HTTPS)
+- **Application**: Go binary running as systemd service on port 8080
+- **Database**: SQLite with pure Go driver (modernc.org/sqlite)
+- **Deployment**: rsync for fast transfers, passwordless sudo for automation
+
 ## License
 
 MIT
