@@ -55,3 +55,6 @@ tmp/
 # Trash directory (for Claude Code)
 .trash/
 trash/
+
+# Database backups
+.db-backups/

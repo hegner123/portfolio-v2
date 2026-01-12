@@ -74,10 +74,11 @@ Intelligent database sync script that compares local and remote database modific
 **What it does:**
 1. Checks modification times of both local and remote databases
 2. Determines which database is newer
-3. Prompts for confirmation before syncing
-4. Creates backup of the database being overwritten
-5. Syncs the newer database to the older location
-6. Restarts remote service if pushing to production
+3. Creates backup of the database being overwritten
+4. Automatically syncs the newer database to the older location
+5. Restarts remote service if pushing to production
+
+**Note:** This script runs automatically at the start of `./deploy/deploy.sh` to ensure you're always deploying the latest content.
 
 **Sync Directions:**
 - **Push (local → remote)**: When local database is newer
@@ -95,15 +96,19 @@ Remote database: 2026-01-12 08:15:20
 
 ⚠ The local database is newer by: 2h 15m 25s
 
-➜ Action: Push local database to remote (local → remote)
+➜ Syncing: Push local database to remote (local → remote)
 
-Continue with sync? (y/N):
+📦 Backing up remote database...
+✓ Remote backup created: remote-backup-20260112-103045.db
+⬆ Pushing local database to remote...
+✓ Database pushed successfully
 ```
 
 **Safety Features:**
 - Automatic backup before overwriting (timestamped)
-- Confirmation prompt showing sync direction and time difference
+- Shows sync direction and time difference
 - No sync if databases have identical modification times
+- Automatic execution (no confirmation needed)
 
 **Use Cases:**
 - Created blog posts locally and want to push to production

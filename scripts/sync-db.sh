@@ -77,19 +77,11 @@ echo -e "${YELLOW}⚠ The $NEWER database is newer by: ${HOURS}h ${MINUTES}m ${S
 echo ""
 
 if [ "$SYNC_DIRECTION" = "push" ]; then
-    echo -e "${BLUE}➜ Action: Push local database to remote (local → remote)${NC}"
+    echo -e "${BLUE}➜ Syncing: Push local database to remote (local → remote)${NC}"
 else
-    echo -e "${BLUE}➜ Action: Pull remote database to local (remote → local)${NC}"
+    echo -e "${BLUE}➜ Syncing: Pull remote database to local (remote → local)${NC}"
 fi
-
 echo ""
-read -p "Continue with sync? (y/N): " -n 1 -r
-echo ""
-
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${YELLOW}Sync cancelled${NC}"
-    exit 0
-fi
 
 # Create backup directory if it doesn't exist
 mkdir -p "$BACKUP_DIR"

@@ -41,6 +41,15 @@ if [ -z "$ADMIN_PASSWORD" ]; then
 fi
 echo "✓ Admin password configured"
 
+# Step 0.5: Sync database (ensure we're deploying the latest content)
+echo ""
+echo "Step 0.5: Syncing database..."
+if [ -f "$LOCAL_DIR/scripts/sync-db.sh" ]; then
+    "$LOCAL_DIR/scripts/sync-db.sh"
+else
+    echo "⚠ Database sync script not found, skipping..."
+fi
+
 # Step 1: Build the application
 echo ""
 echo "Step 1: Building production binary for Linux..."
