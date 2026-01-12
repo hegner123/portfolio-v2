@@ -1,0 +1,23 @@
+[Unit]
+Description=Portfolio V2 Web Application
+After=network.target
+
+[Service]
+Type=simple
+User=admin
+WorkingDirectory=/home/admin/portfolio
+ExecStart=/home/admin/portfolio/portfolio-v2
+Restart=on-failure
+RestartSec=5s
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Environment
+Environment="PORT=8080"
+Environment="ADMIN_USERNAME=admin"
+Environment="ADMIN_PASSWORD=CHANGE_THIS_PASSWORD"
+
+[Install]
+WantedBy=multi-user.target

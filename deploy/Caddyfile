@@ -1,0 +1,29 @@
+michaelhegner.com {
+    # Automatic HTTPS with Let's Encrypt
+
+    # Reverse proxy to the Go application
+    reverse_proxy localhost:8080
+
+    # Enable compression
+    encode gzip
+
+    # Access logs (uses system journal by default)
+    log
+
+    # Headers for security
+    header {
+        # Enable HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Prevent clickjacking
+        X-Frame-Options "SAMEORIGIN"
+        # XSS protection
+        X-Content-Type-Options "nosniff"
+        # Referrer policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+}
+
+# Redirect www to non-www
+www.michaelhegner.com {
+    redir https://michaelhegner.com{uri} permanent
+}
