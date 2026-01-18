@@ -25,18 +25,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const itemMomentum = new Map();
+    const itemPositions = new Map(); // Cache initial positions
+    let gridRect = null; // Cache grid rectangle
 
     // Function to calculate and create grid items
     function createGridItems() {
         // Clear existing items and momentum
         heroGrid.innerHTML = '';
         itemMomentum.clear();
+        itemPositions.clear();
 
         // Get responsive grid configuration
         const config = getGridConfig();
 
-        // Get grid dimensions
-        const gridRect = heroGrid.getBoundingClientRect();
+        // Get grid dimensions and cache them
+        gridRect = heroGrid.getBoundingClientRect();
         const availableWidth = gridRect.width - (config.PADDING * 2);
         const availableHeight = gridRect.height - (config.PADDING * 2);
 
@@ -53,6 +56,15 @@ document.addEventListener('DOMContentLoaded', function() {
             item.className = 'hero-grid-item';
             item.dataset.index = i;
             heroGrid.appendChild(item);
+
+            // Calculate and cache the center position of this item
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            const itemCenterX = gridRect.left + config.PADDING + (col * (config.ITEM_SIZE + config.GAP)) + (config.ITEM_SIZE / 2);
+            const itemCenterY = gridRect.top + config.PADDING + (row * (config.ITEM_SIZE + config.GAP)) + (config.ITEM_SIZE / 2);
+
+            // Cache position
+            itemPositions.set(item, { centerX: itemCenterX, centerY: itemCenterY });
 
             // Initialize momentum for each item
             itemMomentum.set(item, { vx: 0, vy: 0, x: 0, y: 0 });
@@ -172,9 +184,12 @@ document.addEventListener('DOMContentLoaded', function() {
         squareless = true;
 
         gridItems.forEach(item => {
-            const rect = item.getBoundingClientRect();
-            const itemCenterX = rect.left + rect.width / 2;
-            const itemCenterY = rect.top + rect.height / 2;
+            const pos = itemPositions.get(item);
+            if (!pos) return;
+
+            const momentum = itemMomentum.get(item);
+            const itemCenterX = pos.centerX + (momentum ? momentum.x : 0);
+            const itemCenterY = pos.centerY + (momentum ? momentum.y : 0);
 
             // Calculate direction from mouse
             const deltaX = itemCenterX - mouseX;
@@ -198,47 +213,57 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Animation loop for gravitating effect with momentum
+    let animationFrameId = null;
+
     function animateGrid() {
         if (squareless) {
             return;
         }
 
+        // Cache config and frequently used values outside the loop
+        const config = getGridConfig();
+        const maxDistance = config.ITEM_SIZE;
+        const partMultiplier = Math.max(1, partAmount);
+        const baseAmount = 100 / 81; // ~1.234
+        const maxOffset = baseAmount * (partMultiplier * partMultiplier);
+
+        // Calculate opacity once per frame instead of per item
+        const baseOpacity = 0.03;
+        const maxOpacity = 0.2;
+        const opacityIncrease = (maxOpacity - baseOpacity) / 9;
+        const currentOpacity = Math.min(maxOpacity, baseOpacity + (opacityIncrease * partAmount));
+
         gridItems.forEach(item => {
             const momentum = itemMomentum.get(item);
-            if (!momentum) return;
+            const pos = itemPositions.get(item);
+            if (!momentum || !pos) return;
 
-            const rect = item.getBoundingClientRect();
-            const itemCenterX = rect.left + rect.width / 2;
-            const itemCenterY = rect.top + rect.height / 2;
+            // Use cached position instead of getBoundingClientRect()
+            const itemCenterX = pos.centerX + momentum.x;
+            const itemCenterY = pos.centerY + momentum.y;
 
             // Calculate distance from mouse
             const deltaX = mouseX - itemCenterX;
             const deltaY = mouseY - itemCenterY;
-            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-            // Maximum effect distance (constant, not scaled by partAmount)
-            // Set to 1 square (responsive ITEM_SIZE)
-            const config = getGridConfig();
-            const maxDistance = config.ITEM_SIZE;
-            const partMultiplier = Math.max(1, partAmount);
+            const distanceSquared = deltaX * deltaX + deltaY * deltaY;
+            const maxDistanceSquared = maxDistance * maxDistance;
 
             let forceX = 0;
             let forceY = 0;
 
-            if (distance < maxDistance) {
+            if (distanceSquared < maxDistanceSquared) {
+                // Use squared distance to avoid sqrt when possible
+                const distance = Math.sqrt(distanceSquared);
+
                 // Calculate strength based on distance (closer = stronger)
                 const strength = (maxDistance - distance) / maxDistance;
 
                 // Base force amount (reduced for more fluid motion)
-                let baseForce = 0.8;
+                const baseForce = 0.8;
 
                 // Calculate force direction (gravitate towards mouse)
-                forceX = (deltaX / distance) * strength * baseForce;
-                forceY = (deltaY / distance) * strength * baseForce;
-
-                // Apply partAmount multiplier to the force
-                forceX *= partMultiplier;
-                forceY *= partMultiplier;
+                forceX = (deltaX / distance) * strength * baseForce * partMultiplier;
+                forceY = (deltaY / distance) * strength * baseForce * partMultiplier;
 
                 // If mouse is down, reverse the force (run away/part)
                 if (isMouseDown) {
@@ -264,14 +289,12 @@ document.addEventListener('DOMContentLoaded', function() {
             momentum.x += momentum.vx;
             momentum.y += momentum.vy;
 
-            // Calculate maximum allowed offset from origin
-            // baseAmount calculated to reach ~100px at 9 clicks (before explosion at 10)
-            const baseAmount = 100 / 81; // ~1.234
-            const maxOffset = baseAmount * (partMultiplier * partMultiplier);
+            // Clamp position to not exceed max offset - use squared distance
+            const currentDistanceSquared = momentum.x * momentum.x + momentum.y * momentum.y;
+            const maxOffsetSquared = maxOffset * maxOffset;
 
-            // Clamp position to not exceed max offset
-            const currentDistance = Math.sqrt(momentum.x * momentum.x + momentum.y * momentum.y);
-            if (currentDistance > maxOffset) {
+            if (currentDistanceSquared > maxOffsetSquared) {
+                const currentDistance = Math.sqrt(currentDistanceSquared);
                 const scale = maxOffset / currentDistance;
                 momentum.x *= scale;
                 momentum.y *= scale;
@@ -280,18 +303,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 momentum.vy *= 0.5;
             }
 
-            // Calculate opacity based on partAmount (0.03 base, up to 0.2 at 9 clicks)
-            const baseOpacity = 0.03;
-            const maxOpacity = 0.2;
-            const opacityIncrease = (maxOpacity - baseOpacity) / 9; // Spread across 9 clicks
-            const currentOpacity = Math.min(maxOpacity, baseOpacity + (opacityIncrease * partAmount));
-
             // Apply transform and opacity
             item.style.transform = `translate(${momentum.x}px, ${momentum.y}px)`;
             item.style.background = `rgba(255, 255, 255, ${currentOpacity})`;
         });
 
-        requestAnimationFrame(animateGrid);
+        animationFrameId = requestAnimationFrame(animateGrid);
     }
 
     // Start animation
@@ -308,4 +325,31 @@ document.addEventListener('DOMContentLoaded', function() {
             gridItems = createGridItems();
         }, 250);
     });
+
+    // Cleanup: Stop animation when page is hidden or unloaded
+    function stopAnimation() {
+        if (animationFrameId !== null) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+    }
+
+    function startAnimation() {
+        if (animationFrameId === null && !squareless) {
+            animateGrid();
+        }
+    }
+
+    // Pause animation when tab is hidden to save CPU
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            stopAnimation();
+        } else {
+            startAnimation();
+        }
+    });
+
+    // Stop animation before page unload
+    window.addEventListener('beforeunload', stopAnimation);
+    window.addEventListener('pagehide', stopAnimation);
 });

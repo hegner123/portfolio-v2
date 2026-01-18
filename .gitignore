@@ -58,3 +58,8 @@ trash/
 
 # Database backups
 .db-backups/
+
+# Image backups (original uncompressed versions)
+*-original.png
+*-original.jpg
+*-original.gif
