@@ -1,0 +1,44 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.5'
+
+      - name: Install Templ
+        run: go install github.com/a-h/templ/cmd/templ@v0.3.977
+
+      - name: Generate templates
+        run: templ generate
+
+      - name: Build linux/amd64 binary
+        run: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o portfolio-v2 main.go
+
+      - name: Create release tarball
+        run: tar czf portfolio-v2.tar.gz portfolio-v2 static/
+
+      - name: Generate release tag
+        id: tag
+        run: echo "tag=v0.1.$(date -u +'%Y%m%d.%H%M%S')" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Release ${{ steps.tag.outputs.tag }}
+          files: portfolio-v2.tar.gz
+          generate_release_notes: true
